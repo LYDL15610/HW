@@ -74,6 +74,6 @@ int parse_file (FILE* my_obj_file, row_of_memory** memory)
 					}
 			}
 	}
-	fclose(my_obj_file);
+	//fclose(my_obj_file);
 	return 0 ;
 }
