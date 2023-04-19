@@ -1,0 +1,182 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "lc4_memory.h"
+
+
+/*
+ * adds a new node to a linked list pointed to by head
+ */
+int add_to_list (row_of_memory** head,
+		 short unsigned int address,
+		 short unsigned int contents)
+{
+
+    /* check to see if there is already an entry for this address and update the contents.  no additional steps required in this case */
+    
+    /* allocate memory for a single node */
+
+	/* populate fields in newly allocated node w/ address&contents, NULL for label and assembly */
+	/* do not malloc() storage for label and assembly here - do it in parse_file() and reverse_assemble() */
+
+	/* if *head is NULL, node created is the new head of the list! */
+
+	/* otherwise, insert node into the list in address ascending order */
+
+	/* return 0 for success, -1 if malloc fails */
+	row_of_memory* cp = *head; //point to the current head
+	row_of_memory* pp = NULL; //point to the last read
+
+	//When the current head pointer is not Null
+	while (cp != NULL){
+			//if we our address matches, then we should assign the contents to the address
+			if (cp->address == address) {
+					cp->contents = contents;
+					return 0;
+			}
+			//if we need to add code before the current address, we will move the pointer to
+			if (cp->address > address) {
+					break;
+			}
+			//move the pointer 
+			pp = cp;
+			cp = cp->next;
+	}
+	// now if the cp == NULL, we will create a new node.
+	row_of_memory* newhead = (row_of_memory*)malloc(sizeof(row_of_memory));
+	if (newhead == NULL){
+		return -1; //MAKE sure the newhead is created 
+	}
+	
+	newhead->label = NULL;
+	newhead->address = address;
+	newhead->assembly = NULL;
+	newhead->contents = contents;
+	newhead->next = cp;
+
+	if (pp == NULL){ //Then the new node needs to be the new head
+		*head = newhead;
+	} else {
+		pp->next = newhead; //if the new node is not the first, we just connect this one to the linked_list
+	}
+
+	return 0 ;
+}
+
+
+
+/*
+ * search linked list by address field, returns node if found
+ */
+row_of_memory* search_address (row_of_memory* head,
+			       short unsigned int address )
+{
+	/* traverse linked list, searching each node for "address"  */
+
+	/* return pointer to node in the list if item is found */
+
+	/* return NULL if list is empty or if "address" isn't found */
+	row_of_memory*cp = head; // point to move
+	while (cp != NULL){
+		if (cp->address == address){ // if found the address, we can return the pointer.
+			return cp;
+		} else if (cp->address > address){ // if the address we are looking for isn't found
+			return NULL;
+		}
+		cp = cp->next; // Moving the pointer
+	}
+	return NULL ;
+}
+
+/*
+ * search linked list by opcode field, returns node if found
+ */
+row_of_memory* search_opcode  (row_of_memory* head,
+				      short unsigned int opcode  )
+{
+    /* opcode parameter is in the least significant 4 bits of the short int and ranges from 0-15 */
+		/* see assignment instructions for a detailed description */
+    
+    /* traverse linked list until node is found with matching opcode in the most significant 4 bits
+	   AND "assembly" field of node is NULL */
+
+	/* return pointer to node in the list if item is found */
+
+	/* return NULL if list is empty or if no matching nodes */
+	row_of_memory* cp = head;
+	while (cp != NULL){
+		//shift the cp's op code by 12 bits to the right, so we can compare with the op code.
+		short unsigned int cp_op = (cp->contents >>12) & 0xF;
+		if (cp_op == opcode && cp->assembly == NULL){
+			return cp;
+		}
+		cp = cp->next; //traverse the cp pointer
+
+	}
+	return NULL ;
+}
+
+
+void print_list (row_of_memory* head )
+{
+	/* make sure head isn't NULL */
+
+	/* print out a header */
+    
+    /* don't print assembly directives for non opcode 1 instructions if you are doing extra credit */
+
+	/* traverse linked list, print contents of each node */
+	if (head == NULL){
+		printf("The linked_listis empty \n");
+		return;
+	}
+
+	row_of_memory* cp = head;
+
+	//print the header
+	printf("%-20s %-20s %-20s %-20s\n " , "<label>", "<address>", "<contents>", "<>assembly");
+
+	while (cp != NULL){
+		if (cp->label){
+			printf ("%-20s", cp->label);
+		} else {
+			printf ("%-20s", "(null)");
+		}
+
+		printf("%-20.04x %-20.04x", cp->address, cp->contents);
+		if (cp->assembly){
+			printf ("%-20s", cp->assembly);
+		} else {
+			printf ("%-20s", "(null)");
+		}
+		printf ("\n");
+		cp= cp->next;
+	}
+
+	return ;
+}
+
+/*
+ * delete entire linked list
+ */
+int delete_list    (row_of_memory** head )
+{
+	/* delete entire list node by node */
+	/* set the list head pointer to NULL upon deletion */
+	if (*head == NULL){
+		return 0;
+	}
+	row_of_memory* cp = *head;
+	row_of_memory* temp = NULL;
+
+
+	while (cp != NULL){
+			temp = cp->next; //Save the next Node connecttion
+			free(cp->label); //free label and assembly
+			free(cp->assembly);
+			free (cp); //free the node
+			cp = temp; //move to the next node
+	}
+	*head = NULL;//set the head pointer to null after all node has been delete
+
+	return 0 ;
+}
